@@ -443,10 +443,14 @@ version: Emacs 30 inserted `evalexprs' ahead of it (Bug#65902,
 commit 683efb8de5), shifting `dontkill' from index 4 to index 5."
   (let* ((proc (nth 0 args))
          (dontkill-index (if (>= emacs-major-version 30) 5 4))
-         (dontkill (nth dontkill-index args)))
+         (dontkill (nth dontkill-index args))
+         (completed nil))
     (unwind-protect
-        (apply orig-fn args)
-      (when (and (null dontkill)
+        (prog1
+            (apply orig-fn args)
+          (setq completed t))
+      (when (and (not completed)
+                 (null dontkill)
                  (processp proc)
                  (process-live-p proc)
                  (eq (process-status proc) 'open))
